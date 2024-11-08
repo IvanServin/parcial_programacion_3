@@ -1,6 +1,34 @@
 <?php
 include 'db.php';
 
+// Manejar la solicitud de completar una tarea
+if (isset($_GET['completar'])) {
+    $id = $_GET['id'];
+    $query = "UPDATE tareas SET completada = TRUE, fecha_completada = NOW() WHERE id = :id AND completada = FALSE";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindParam(':id', $id);
+    
+    if ($stmt->execute()) {
+        echo "<div class='message'>Tarea completada exitosamente!</div>";
+    } else {
+        echo "<div class='message'>Error al completar la tarea.</div>";
+    }
+}
+
+// Manejar la solicitud de eliminar una tarea
+if (isset($_GET['eliminar'])) {
+    $id = $_GET['id'];
+    $query = "UPDATE tareas SET eliminada = TRUE WHERE id = :id";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindParam(':id', $id);
+    
+    if ($stmt->execute()) {
+        echo "<div class='message'>Tarea eliminada exitosamente!</div>";
+    } else {
+        echo "<div class='message'>Error al eliminar la tarea.</div>";
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nombre = $_POST['nombre'];
     $archivoAdjunto = $_FILES['archivo']['name'];
@@ -63,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <h2>Tareas Pendientes</h2>
     <ul>
         <?php
+        // Obtener tareas pendientes
         $query_pendientes = "SELECT * FROM tareas WHERE completada = FALSE AND eliminada = FALSE ORDER BY fecha_creacion DESC";
         $stmt_pendientes = $pdo->query($query_pendientes);
         $tareas_pendientes = $stmt_pendientes->fetchAll(PDO::FETCH_ASSOC);
@@ -89,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <h2>Tareas Completadas</h2>
     <ul>
         <?php
+        // Obtener tareas completadas
         $query_completadas = "SELECT * FROM tareas WHERE completada = TRUE AND eliminada = FALSE ORDER BY fecha_completada DESC";
         $stmt_completadas = $pdo->query($query_completadas);
         $tareas_completadas = $stmt_completadas->fetchAll(PDO::FETCH_ASSOC);
